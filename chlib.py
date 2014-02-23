@@ -107,7 +107,7 @@ class Group:
     self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.chSocket.setblocking(True)
     self.chSocket.connect(("s"+str(self.snum)+".chatango.com", 443))
-    threading.Timer(90, self.manager.pingTimer, (self,)).start()
+    threading.Timer(20, self.manager.pingTimer, (self,)).start()
     self.wbuf += bytes("bauth:"+self.name+":"+self.uid+":"+self.user+":"+self.password+"\x00", "utf-8")
 
   def disconnect(self):
@@ -236,7 +236,7 @@ class ConnectionManager:
     self.chSocket.setblocking(True)
     self.chSocket.connect(("c1.chatango.com", 5222))
     self.pmAuth = Generate.auth(self)
-    t = threading.Timer(90, self.pingTimer, (self,))
+    t = threading.Timer(20, self.pingTimer, (self,))
     t.setDaemon(True)
     t.start()
     self.wbuf += bytes("tlogin:"+self.pmAuth+":2:"+self.uid+"\x00", "utf-8")
