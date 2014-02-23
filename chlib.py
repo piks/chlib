@@ -154,7 +154,7 @@ class Group:
   def getAuth(self, user):
     """return the users group level 2 = owner 1 = mod  0 = user"""
     if user == self.owner: return 2
-    if user in self.mods: return 2
+    if user in self.mods: return 1
     else: return 0
 
   def getBan(self, user):
