@@ -27,20 +27,20 @@ specials = {"de-livechat": 5, "ver-anime": 8, "watch-dragonball": 8, "narutowire
 
 
 def getServer(group):
-  s_num = None
-  if group in specials.keys(): s_num = specials[group]
-  else:
-    group = group.replace('-', 'q').replace('_', 'q')
-    tmp8 = max(int(group[6:][:3], 36), 1000) if len(group) > 6 else 1000
-    tmp9 = (int(group[:5], 36) % tmp8) / tmp8
-    tmp6 = sum(x[1] for x in weights)
-    tmp4 = 0
-    for i in range(0, len(weights)):
-      tmp4 += weights[i][1] / tmp6
-      if (tmp9 <= tmp4):
-        s_num = weights[i][0]
-        break
-  return s_num
+	s_num = None
+	if group in specials.keys(): s_num = specials[group]
+	else:
+		group = group.replace('-', 'q').replace('_', 'q')
+		tmp8 = max(int(group[6:][:3], 36), 1000) if len(group) > 6 else 1000
+		tmp9 = (int(group[:5], 36) % tmp8) / tmp8
+		tmp6 = sum(x[1] for x in weights)
+		tmp4 = 0
+		for i in range(0, len(weights)):
+			tmp4 += weights[i][1] / tmp6
+			if (tmp9 <= tmp4):
+				s_num = weights[i][0]
+				break
+	return s_num
 
 ################################
 #Generate Auth/Anon ID
@@ -48,25 +48,25 @@ def getServer(group):
 
 class Generate:
 
-  def aid(self, n, uid):
-    try:
-      if (int(n) == 0) or (len(n) < 4): n = "3452"
-    except ValueError: n = "3452"
-    if n != "3452": n = str(int(n))[-4:]
-    v1, v5 = 0, ""
-    for i in range(0, len(n)): v5 += str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))[len(str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))) - 1:]
-    return v5
+	def aid(self, n, uid):
+		try:
+			if (int(n) == 0) or (len(n) < 4): n = "3452"
+		except ValueError: n = "3452"
+		if n != "3452": n = str(int(n))[-4:]
+		v1, v5 = 0, ""
+		for i in range(0, len(n)): v5 += str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))[len(str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))) - 1:]
+		return v5
 
-  def auth(self):
-    auth = urllib.request.urlopen("http://chatango.com/login",
-                                  urllib.parse.urlencode({
-                                  "user_id": self.user,
-                                  "password": self.password,
-                                  "storecookie": "on",
-                                  "checkerrors": "yes" }).encode()
-                                  ).getheader("Set-Cookie")
-    try: return re.search("auth.chatango.com=(.*?);", auth).group(1)
-    except: return None
+	def auth(self):
+		auth = urllib.request.urlopen("http://chatango.com/login",
+																	urllib.parse.urlencode({
+																	"user_id": self.user,
+																	"password": self.password,
+																	"storecookie": "on",
+																	"checkerrors": "yes" }).encode()
+																	).getheader("Set-Cookie")
+		try: return re.search("auth.chatango.com=(.*?);", auth).group(1)
+		except: return None
 
 ################################
 #Represents chat groups
@@ -74,133 +74,133 @@ class Generate:
 
 class Group:
 
-  def __init__(self, manager, group, user, password, uid):
+	def __init__(self, manager, group, user, password, uid):
 
-    self.manager = manager
-    self.name = group
-    self.user = user.lower()
-    self.password = password
-    self.time = None
-    self.chSocket = None
-    self.wbuf = b""
-    self.snum = getServer(group)
-    self.loginFail = False
-    self.uid = uid
-    self.mods = list()
-    self.owner = None
-    self.blist = list()
-    self.bw = list()
-    self.users = list()
-    self.ping = False
-    self.pArray = {}
-    self.unum = None
-    self.limit = 0
-    self.limited = 0
-    self.fSize = "11"
-    self.fFace = "0"
-    self.fColor = "000"
-    self.nColor = "CCC"
-    self.connect()
+		self.manager = manager
+		self.name = group
+		self.user = user.lower()
+		self.password = password
+		self.time = None
+		self.chSocket = None
+		self.wbuf = b""
+		self.snum = getServer(group)
+		self.loginFail = False
+		self.uid = uid
+		self.mods = list()
+		self.owner = None
+		self.blist = list()
+		self.bw = list()
+		self.users = list()
+		self.ping = False
+		self.pArray = {}
+		self.unum = None
+		self.limit = 0
+		self.limited = 0
+		self.fSize = "11"
+		self.fFace = "0"
+		self.fColor = "000"
+		self.nColor = "CCC"
+		self.connect()
 
-  def fileno(self): return self.chSocket.fileno()
-  def connect(self):
-    self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.chSocket.setblocking(True)
-    self.chSocket.connect(("s"+str(self.snum)+".chatango.com", 443))
-    t = threading.Timer(20, self.manager.pingTimer, (self,))
-    t.setDaemon(True)
-    t.start()
-    self.wbuf += bytes("bauth:"+self.name+":"+self.uid+":"+self.user+":"+self.password+"\x00", "utf-8")
+	def fileno(self): return self.chSocket.fileno()
+	def connect(self):
+		self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.chSocket.setblocking(True)
+		self.chSocket.connect(("s"+str(self.snum)+".chatango.com", 443))
+		t = threading.Timer(20, self.manager.pingTimer, (self,))
+		t.setDaemon(True)
+		t.start()
+		self.wbuf += bytes("bauth:"+self.name+":"+self.uid+":"+self.user+":"+self.password+"\x00", "utf-8")
 
-  def disconnect(self):
-    self.chSocket.close()
-    if self in self.manager.cArray: self.manager.cArray.remove(self)
+	def disconnect(self):
+		self.chSocket.close()
+		if self in self.manager.cArray: self.manager.cArray.remove(self)
 
-  def getBanList(self):
-    self.blist = list()
-    self.sendCmd("blocklist", "block", "", "next", "500")
+	def getBanList(self):
+		self.blist = list()
+		self.sendCmd("blocklist", "block", "", "next", "500")
 
-  def sendCmd(self, *args): self.wbuf += bytes(':'.join(args)+"\r\n\x00", "utf-8")
-  def getLastPost(self, match, data = "user"):
-    try: post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
-    except: post = None
-    return post
+	def sendCmd(self, *args): self.wbuf += bytes(':'.join(args)+"\r\n\x00", "utf-8")
+	def getLastPost(self, match, data = "user"):
+		try: post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
+		except: post = None
+		return post
 
-  def sendPost(self, post, html = True):
-    if not html: post = post.replace("<", "&lt;").replace(">", "&gt;")
-    if len(post) < 2700 and self.limited == 0: self.sendCmd("bmsg", "t12r", "<n"+self.nColor+"/><f x"+self.fSize+self.fColor+"=\""+self.fFace+"\">"+post)
+	def sendPost(self, post, html = True):
+		if not html: post = post.replace("<", "&lt;").replace(">", "&gt;")
+		if len(post) < 2700 and self.limited == 0: self.sendCmd("bmsg", "t12r", "<n"+self.nColor+"/><f x"+self.fSize+self.fColor+"=\""+self.fFace+"\">"+post)
 
-  def login(self, user, password = None):
-    if user and password:
-      self.sendCmd("blogin", user, password) #user
-      self.user = user
-    elif user:
-      self.user = "#" + user
-      self.sendCmd("blogin", user) #temporary user
-    else: self.sendCmd("blogin")
+	def login(self, user, password = None):
+		if user and password:
+			self.sendCmd("blogin", user, password) #user
+			self.user = user
+		elif user:
+			self.user = "#" + user
+			self.sendCmd("blogin", user) #temporary user
+		else: self.sendCmd("blogin")
 
-  def logout(self): self.sendCmd("blogout")
+	def logout(self): self.sendCmd("blogout")
 
-  def enableBg(self): self.sendCmd("getpremium", "1")
-  def disableBg(self): self.sendCmd("msgbg", "0")
+	def enableBg(self): self.sendCmd("getpremium", "1")
+	def disableBg(self): self.sendCmd("msgbg", "0")
 
-  def enableVr(self): self.sendCmd("msgmedia", "1")
-  def disableVr(self): self.sendCmd("msgmedia", "0")
+	def enableVr(self): self.sendCmd("msgmedia", "1")
+	def disableVr(self): self.sendCmd("msgmedia", "0")
 
-  def setNameColor(self, nColor): self.nColor = nColor
-  def setFontColor(self, fColor): self.fColor = fColor
-  def setFontSize(self, fSize):
-    if int(fSize) < 23: self.fSize = fSize
-  def setFontFace(self, fFace): self.fFace = fFace
+	def setNameColor(self, nColor): self.nColor = nColor
+	def setFontColor(self, fColor): self.fColor = fColor
+	def setFontSize(self, fSize):
+		if int(fSize) < 23: self.fSize = fSize
+	def setFontFace(self, fFace): self.fFace = fFace
 
-  def getAuth(self, user):
-    """return the users group level 2 = owner 1 = mod  0 = user"""
-    if user == self.owner: return 2
-    if user in self.mods: return 1
-    else: return 0
+	def getAuth(self, user):
+		"""return the users group level 2 = owner 1 = mod	0 = user"""
+		if user == self.owner: return 2
+		if user in self.mods: return 1
+		else: return 0
 
-  def getBan(self, user):
-    banned = [x for x in self.blist if x.user == user]
-    if banned: return banned[0]
-    else: return None
+	def getBan(self, user):
+		banned = [x for x in self.blist if x.user == user]
+		if banned: return banned[0]
+		else: return None
 
-  def dlPost(self, post): self.sendCmd("delmsg", post.pid)
+	def dlPost(self, post): self.sendCmd("delmsg", post.pid)
 
-  def dlUser(self, user):
-    post = self.getLastPost(user)
-    unid = None
-    if post: unid = post.unid
-    if unid: self.sendCmd("delallmsg", unid, "")
+	def dlUser(self, user):
+		post = self.getLastPost(user)
+		unid = None
+		if post: unid = post.unid
+		if unid: self.sendCmd("delallmsg", unid, "")
 
-  def ban(self, user):
-    unid = None
-    ip = None
-    try:
-      unid = self.getLastPost(user).unid
-      ip = self.getLastPost(user).ip
-    except: pass
-    if unid and ip:
-      if (user.startswith("#")) or (user.startswith("!")): self.sendCmd("block", unid, ip, "")
-      else: self.sendCmd("block", unid, ip, user)
-    self.getBanList()
+	def ban(self, user):
+		unid = None
+		ip = None
+		try:
+			unid = self.getLastPost(user).unid
+			ip = self.getLastPost(user).ip
+		except: pass
+		if unid and ip:
+			if (user.startswith("#")) or (user.startswith("!")): self.sendCmd("block", unid, ip, "")
+			else: self.sendCmd("block", unid, ip, user)
+		self.getBanList()
 
-  def flag(self, user):
-    pid = self.getLastPost(user).pid
-    self.sendCmd("g_flag", pid)
+	def flag(self, user):
+		pid = self.getLastPost(user).pid
+		self.sendCmd("g_flag", pid)
 
-  def unban(self, user):
-    banned = [x for x in self.blist if x.user == user]
-    if banned:
-      self.sendCmd("removeblock", banned[0].unid, banned[0].ip, banned[0].user)
-      self.getBanList()
+	def unban(self, user):
+		banned = [x for x in self.blist if x.user == user]
+		if banned:
+			self.sendCmd("removeblock", banned[0].unid, banned[0].ip, banned[0].user)
+			self.getBanList()
 
-  def setMod(self, mod): self.sendCmd("addmod", mod)
-  def eraseMod(self, mod): self.sendCmd("removemod", mod)
-  def clearGroup(self):
-    if self.user == self.owner: self.sendCmd("clearall")
-    else: #;D
-      for history in list(self.pArray.values()): self.sendCmd("delmsg", history.pid)
-  
+	def setMod(self, mod): self.sendCmd("addmod", mod)
+	def eraseMod(self, mod): self.sendCmd("removemod", mod)
+	def clearGroup(self):
+		if self.user == self.owner: self.sendCmd("clearall")
+		else: #;D
+			for history in list(self.pArray.values()): self.sendCmd("delmsg", history.pid)
+	
 ################################
 #Connections Manager
 #Handles: New Connections and Connection data
@@ -208,256 +208,256 @@ class Group:
 
 class ConnectionManager:
 
-  def __init__(self, user, password, pm):
-    self.user = user.lower()
-    self.password = password
-    self.pm = pm
-    self.name = "pm"
-    self.connected = False
-    self.cArray = list()
-    self.groups = list()
-    self.fl = list()
-    self.bl = list()
-    self.chSocket = None
-    self.wbuf = b""
-    self.pmAuth = None
-    self.ping = None
-    self.ip = None
-    self.fSize = "11"
-    self.fFace = "0"
-    self.fColor = "000"
-    self.nColor = "000"
-    self.uid = str(int(random.randrange(1000000000000000, 10000000000000000)))
-    self.prefix = None
-    if self.pm: self.connect()
+	def __init__(self, user, password, pm):
+		self.user = user.lower()
+		self.password = password
+		self.pm = pm
+		self.name = "pm"
+		self.connected = False
+		self.cArray = list()
+		self.groups = list()
+		self.fl = list()
+		self.bl = list()
+		self.chSocket = None
+		self.wbuf = b""
+		self.pmAuth = None
+		self.ping = None
+		self.ip = None
+		self.fSize = "11"
+		self.fFace = "0"
+		self.fColor = "000"
+		self.nColor = "000"
+		self.uid = str(int(random.randrange(1000000000000000, 10000000000000000)))
+		self.prefix = None
+		if self.pm: self.connect()
 
-  def fileno(self): return self.chSocket.fileno()
+	def fileno(self): return self.chSocket.fileno()
 
-  def connect(self):
-    self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.chSocket.setblocking(True)
-    self.chSocket.connect(("c1.chatango.com", 5222))
-    self.pmAuth = Generate.auth(self)
-    t = threading.Timer(20, self.pingTimer, (self,))
-    t.setDaemon(True)
-    t.start()
-    self.wbuf += bytes("tlogin:"+self.pmAuth+":2:"+self.uid+"\x00", "utf-8")
-    self.cArray.append(self)
-    self.connected = True
+	def connect(self):
+		self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.chSocket.setblocking(True)
+		self.chSocket.connect(("c1.chatango.com", 5222))
+		self.pmAuth = Generate.auth(self)
+		t = threading.Timer(20, self.pingTimer, (self,))
+		t.setDaemon(True)
+		t.start()
+		self.wbuf += bytes("tlogin:"+self.pmAuth+":2:"+self.uid+"\x00", "utf-8")
+		self.cArray.append(self)
+		self.connected = True
 
-  def disconnect(self):
-    self.chSocket.close()
-    if self in self.cArray: self.cArray.remove(self)
+	def disconnect(self):
+		self.chSocket.close()
+		if self in self.cArray: self.cArray.remove(self)
 
-  def sendCmd(self, *args): self.wbuf += bytes(':'.join(args)+"\r\n\x00", "utf-8")
+	def sendCmd(self, *args): self.wbuf += bytes(':'.join(args)+"\r\n\x00", "utf-8")
 
-  def addGroup(self, group):
-    if not self.getGroup(group) in self.cArray:
-      group = Group(self, group, self.user, self.password, self.uid)
-      self.cArray.append(group)
-      self.groups.append(group.name)
-    self.connected = True
+	def addGroup(self, group):
+		if not self.getGroup(group) in self.cArray:
+			group = Group(self, group, self.user, self.password, self.uid)
+			self.cArray.append(group)
+			self.groups.append(group.name)
+		self.connected = True
 
-  def removeGroup(self, group):
-    group = self.getGroup(group)
-    if group in self.cArray:
-      self.cArray.remove(group)
-      self.groups.remove(group.name)
-      group.chSocket.close()
-      self.recvRemove(group)
-    if not self.cArray:
-      self.ping = False
-      self.connected = False
+	def removeGroup(self, group):
+		group = self.getGroup(group)
+		if group in self.cArray:
+			self.cArray.remove(group)
+			self.groups.remove(group.name)
+			group.chSocket.close()
+			self.recvRemove(group)
+		if not self.cArray:
+			self.ping = False
+			self.connected = False
 
-  def getGroup(self, group):
-    group = [g for g in self.cArray if g.name == group]
-    if group: return group[0]
+	def getGroup(self, group):
+		group = [g for g in self.cArray if g.name == group]
+		if group: return group[0]
 
-  def getUser(self, user):
-    groups = list()
-    for group in self.cArray:
-      if hasattr(group, "users"):
-        if user.lower() in group.users: groups.append(group.name)
-    if groups: return groups
-    else: return None
+	def getUser(self, user):
+		groups = list()
+		for group in self.cArray:
+			if hasattr(group, "users"):
+				if user.lower() in group.users: groups.append(group.name)
+		if groups: return groups
+		else: return None
 
-  def cleanPM(self, pm): return re.sub("<i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/> ", "", re.sub(" <i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/>", "", re.sub("<mws c='(.*?)' s='(.*?)'/>", "", re.sub("<g x(.*?)\">", "", re.sub("<n(.*?)/>", "", re.sub("</(.*?)>", "", pm.replace("<m v=\"1\">", "").replace("<g xs0=\"0\">", "")))))))
-  def sendPM(self, user, pm): self.sendCmd("msg", user, "<n"+self.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+self.fSize+"s"+self.fColor+"=\""+self.fFace+"\">"+pm+"</g></g></m>")
+	def cleanPM(self, pm): return re.sub("<i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/> ", "", re.sub(" <i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/>", "", re.sub("<mws c='(.*?)' s='(.*?)'/>", "", re.sub("<g x(.*?)\">", "", re.sub("<n(.*?)/>", "", re.sub("</(.*?)>", "", pm.replace("<m v=\"1\">", "").replace("<g xs0=\"0\">", "")))))))
+	def sendPM(self, user, pm): self.sendCmd("msg", user, "<n"+self.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+self.fSize+"s"+self.fColor+"=\""+self.fFace+"\">"+pm+"</g></g></m>")
 
-  def manage(self, group, cmd, bites):
+	def manage(self, group, cmd, bites):
 
-    args = [group]
-    
-    if cmd == "denied":
-      group.chSocket.close()
-      self.cArray.remove(self.getGroup(group.name))
-      if not self.cArray: self.connected = False
+		args = [group]
+		
+		if cmd == "denied":
+			group.chSocket.close()
+			self.cArray.remove(self.getGroup(group.name))
+			if not self.cArray: self.connected = False
 
-    elif cmd == "ok":
-      if bites[3] != 'M': self.removeGroup(group.name)
-      else:
-        group.owner = bites[1]
-        group.time = bites[5]
-        self.ip = bites[6]
-        group.mods = bites[7].split(';')
-        group.mods.sort()
+		elif cmd == "ok":
+			if bites[3] != 'M': self.removeGroup(group.name)
+			else:
+				group.owner = bites[1]
+				group.time = bites[5]
+				self.ip = bites[6]
+				group.mods = bites[7].split(';')
+				group.mods.sort()
 
-    elif cmd == "inited":
-      group.sendCmd("blocklist", "block", "", "next", "500")
-      group.sendCmd("g_participants", "start")
-      group.sendCmd("getbannedwords")
-      group.sendCmd("getratelimit")
+		elif cmd == "inited":
+			group.sendCmd("blocklist", "block", "", "next", "500")
+			group.sendCmd("g_participants", "start")
+			group.sendCmd("getbannedwords")
+			group.sendCmd("getratelimit")
 
-    elif cmd == "premium":
-      if int(bites[2]) > time.time(): group.sendCmd("msgbg", "1")
+		elif cmd == "premium":
+			if int(bites[2]) > time.time(): group.sendCmd("msgbg", "1")
 
-    elif cmd == "getratelimit":
-      group.limit = int(bites[1])
-      group.limited = int(bites[2])
+		elif cmd == "getratelimit":
+			group.limit = int(bites[1])
+			group.limited = int(bites[2])
 
-    elif cmd == "g_participants":
-      pl = ":".join(bites[1:]).split(";")
-      for p in pl:
-        p = p.split(":")[:-1]
-        if p[-2] != "None" and p[-1] == "None": group.users.append(p[-2].lower())
-      group.users.sort()
+		elif cmd == "g_participants":
+			pl = ":".join(bites[1:]).split(";")
+			for p in pl:
+				p = p.split(":")[:-1]
+				if p[-2] != "None" and p[-1] == "None": group.users.append(p[-2].lower())
+			group.users.sort()
 
-    elif cmd == "blocklist":
-      if bites[1]:
-        blklist = (":".join(bites[1:])).split(";")
-        for banned in blklist:
-          bData = banned.split(":")
-          group.blist.append(type("BannedUser", (object,), {"unid": bData[0], "ip": bData[1], "user": bData[2], "uid": bData[3], "mod": bData[4]}))
-        lastUid = group.blist[-1].uid
-        group.sendCmd("blocklist", "block", lastUid, "next", "500")
+		elif cmd == "blocklist":
+			if bites[1]:
+				blklist = (":".join(bites[1:])).split(";")
+				for banned in blklist:
+					bData = banned.split(":")
+					group.blist.append(type("BannedUser", (object,), {"unid": bData[0], "ip": bData[1], "user": bData[2], "uid": bData[3], "mod": bData[4]}))
+				lastUid = group.blist[-1].uid
+				group.sendCmd("blocklist", "block", lastUid, "next", "500")
 
-    elif cmd == "bw": group.bw = bites[2].split("%2C")
-    elif cmd == 'participant':
-      user = None
-      if (bites[1] == '0') and (bites[4] != "None") and (bites[4].lower() in group.users):
-        group.users.remove(bites[4].lower())
-      if (bites[1] == '1') and (bites[-4] != "None"):
-        group.users.append(bites[4].lower())
-        group.users.sort()
-      args = [bites[1], group, user, bites[3]]
+		elif cmd == "bw": group.bw = bites[2].split("%2C")
+		elif cmd == 'participant':
+			user = None
+			if (bites[1] == '0') and (bites[4] != "None") and (bites[4].lower() in group.users):
+				group.users.remove(bites[4].lower())
+			if (bites[1] == '1') and (bites[-4] != "None"):
+				group.users.append(bites[4].lower())
+				group.users.sort()
+			args = [bites[1], group, user, bites[3]]
 
-    elif cmd == "ratelimited": group.limit = int(bites[1])
-    elif cmd == "ratelimitset": group.limit = int(bites[1])
-    elif cmd == "getratelimit":
-      group.limit = int(bites[1])
-      group.limited = int(bites[2])
+		elif cmd == "ratelimited": group.limit = int(bites[1])
+		elif cmd == "ratelimitset": group.limit = int(bites[1])
+		elif cmd == "getratelimit":
+			group.limit = int(bites[1])
+			group.limited = int(bites[2])
 
-    elif cmd == 'b':
-      try:
-        fTag = re.search("<f x(.*?)>", bites[10]).group(1)
-        fSize = fTag[:2]
-        fFace = re.search("(.*?)=\"(.*?)\"", fTag).group(2)
-        fColor = re.search(fSize+"(.*?)=\""+fFace+"\"", fTag).group(1)
-      except:
-        fSize = "11"
-        fColor = "000"
-        fFace = "0"
-      group.pArray[int(bites[6])] = type("Post", (object,), {"group": group, "time": bites[1], "user": bites[2].lower() if bites[2] != '' else "#" + bites[3] if bites[3] != '' else "!anon" + Generate.aid(self, re.search("<n(.*?)/>", bites[10]).group(1), bites[4]) if re.search("<n(.*?)/>", bites[10]) != None else "!anon" , "uid": bites[4], "unid": bites[5], "pnum": bites[6], "ip": bites[7], "post": re.sub("<(.*?)>", "", ":".join(bites[10:])).replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&"), "nColor": re.search("<n(.*?)/>", bites[10]).group(1) if re.search("<n(.*?)/>", bites[10]) else "000", "fSize": fSize, "fFace": fFace, "fColor": fColor})
+		elif cmd == 'b':
+			try:
+				fTag = re.search("<f x(.*?)>", bites[10]).group(1)
+				fSize = fTag[:2]
+				fFace = re.search("(.*?)=\"(.*?)\"", fTag).group(2)
+				fColor = re.search(fSize+"(.*?)=\""+fFace+"\"", fTag).group(1)
+			except:
+				fSize = "11"
+				fColor = "000"
+				fFace = "0"
+			group.pArray[int(bites[6])] = type("Post", (object,), {"group": group, "time": bites[1], "user": bites[2].lower() if bites[2] != '' else "#" + bites[3] if bites[3] != '' else "!anon" + Generate.aid(self, re.search("<n(.*?)/>", bites[10]).group(1), bites[4]) if re.search("<n(.*?)/>", bites[10]) != None else "!anon" , "uid": bites[4], "unid": bites[5], "pnum": bites[6], "ip": bites[7], "post": re.sub("<(.*?)>", "", ":".join(bites[10:])).replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&"), "nColor": re.search("<n(.*?)/>", bites[10]).group(1) if re.search("<n(.*?)/>", bites[10]) else "000", "fSize": fSize, "fFace": fFace, "fColor": fColor})
 
-    elif cmd == 'u':
-      try:
-        post = group.pArray[int(bites[1])]
-        setattr(post, "pid", bites[2])
-        if post.post: #not blank post
-          self.recvPost(post.user, group, group.getAuth(post.user), post)
-          if post.post[0] == self.prefix: self.recvCommand(post.user, group, group.getAuth(post.user), post, post.post.split()[0][1:].lower(), " ".join(post.post.split()[1:]))
-      except KeyError: pass
+		elif cmd == 'u':
+			try:
+				post = group.pArray[int(bites[1])]
+				setattr(post, "pid", bites[2])
+				if post.post: #not blank post
+					self.recvPost(post.user, group, group.getAuth(post.user), post)
+					if post.post[0] == self.prefix: self.recvCommand(post.user, group, group.getAuth(post.user), post, post.post.split()[0][1:].lower(), " ".join(post.post.split()[1:]))
+			except KeyError: pass
 
-    elif cmd == "n": group.unum = bites[1]
-    elif cmd == "mods":
-      mlist = bites[1:]
-      mod = ""
-      if len(mlist) < len(group.mods):
-        mod = [m for m in group.mods if m not in mlist][0]
-        group.mods.remove(mod)
-        args = [False, group, mod]
-      if len(mlist) > len(group.mods):
-        mod = [m for m in mlist if m not in group.mods][0]
-        group.mods.append(mod)
-        args = [True, group, mod]
+		elif cmd == "n": group.unum = bites[1]
+		elif cmd == "mods":
+			mlist = bites[1:]
+			mod = ""
+			if len(mlist) < len(group.mods):
+				mod = [m for m in group.mods if m not in mlist][0]
+				group.mods.remove(mod)
+				args = [False, group, mod]
+			if len(mlist) > len(group.mods):
+				mod = [m for m in mlist if m not in group.mods][0]
+				group.mods.append(mod)
+				args = [True, group, mod]
 
-    elif cmd == "deleteall":
-      for pid in bites[1:]:
-        deleted = group.getLastPost(pid, "pid")
-        if deleted:
-          args = [group, deleted]
-          del group.pArray[int(deleted.pnum)]
-        else: args = [group, None]
+		elif cmd == "deleteall":
+			for pid in bites[1:]:
+				deleted = group.getLastPost(pid, "pid")
+				if deleted:
+					args = [group, deleted]
+					del group.pArray[int(deleted.pnum)]
+				else: args = [group, None]
 
-    elif cmd == "delete":
-      deleted = group.getLastPost(bites[1], "pid")
-      if deleted:
-        args = [group, deleted]
-        del group.pArray[int(deleted.pnum)]
-      else: args = [group, None]
+		elif cmd == "delete":
+			deleted = group.getLastPost(bites[1], "pid")
+			if deleted:
+				args = [group, deleted]
+				del group.pArray[int(deleted.pnum)]
+			else: args = [group, None]
 
-    elif cmd == "blocked":
-      if bites[3]: args = [group, bites[3], bites[4]]
-      else:
-        post = group.getLastPost(bites[1], "unid")
-        if post: args = [group, post.user, bites[4]]
-      group.getBanList()
+		elif cmd == "blocked":
+			if bites[3]: args = [group, bites[3], bites[4]]
+			else:
+				post = group.getLastPost(bites[1], "unid")
+				if post: args = [group, post.user, bites[4]]
+			group.getBanList()
 
-    elif cmd == "unblocked":
-      if group.name == "pm": self.bl.remove(bites[1])
-      else:
-        if bites[3]:
-          group.getBanList()
-          args = [group, bites[3], bites[4]]
-        else: args = [group, "Non-member", bites[4]]
+		elif cmd == "unblocked":
+			if group.name == "pm": self.bl.remove(bites[1])
+			else:
+				if bites[3]:
+					group.getBanList()
+					args = [group, bites[3], bites[4]]
+				else: args = [group, "Non-member", bites[4]]
 
-    elif cmd == "logoutok": group.user  = "!anon" + Generate.aid(self, self.nColor, group.uid)
-    elif cmd == "clearall":
-      if bites[1] == "ok": group.pArray = {}
+		elif cmd == "logoutok": group.user	= "!anon" + Generate.aid(self, self.nColor, group.uid)
+		elif cmd == "clearall":
+			if bites[1] == "ok": group.pArray = {}
 
-    elif cmd == "tb":
-      mins, secs = divmod(int(bites[1]), 60)
-      args = [group, mins, secs]
-      
-    elif cmd == "show_tb":
-      mins, secs = divmod(int(bites[1]), 60)
-      args = [group, mins, secs]
+		elif cmd == "tb":
+			mins, secs = divmod(int(bites[1]), 60)
+			args = [group, mins, secs]
+			
+		elif cmd == "show_tb":
+			mins, secs = divmod(int(bites[1]), 60)
+			args = [group, mins, secs]
 
-    elif cmd == "OK": self.sendCmd("wl")
-    elif cmd == "wl":
-      for i in range(1, len(bites), 4): self.fl.append(bites[i])
-      self.fl.sort()
+		elif cmd == "OK": self.sendCmd("wl")
+		elif cmd == "wl":
+			for i in range(1, len(bites), 4): self.fl.append(bites[i])
+			self.fl.sort()
 
-    elif cmd == "msg": args = [bites[1], self.cleanPM(":".join(bites[6:]))]
-    elif cmd == "msgoff": args = [bites[1], self.cleanPM(":".join(bites[6:]))]
+		elif cmd == "msg": args = [bites[1], self.cleanPM(":".join(bites[6:]))]
+		elif cmd == "msgoff": args = [bites[1], self.cleanPM(":".join(bites[6:]))]
 
-    if hasattr(self, "recv"+cmd) and None not in args: getattr(self, "recv"+cmd)(*args)
+		if hasattr(self, "recv"+cmd) and None not in args: getattr(self, "recv"+cmd)(*args)
 
-  def decode(self, group, buffer):
-    buffer = buffer.split(b"\x00")
-    for raw in buffer:
-      if raw: self.manage(group, raw.decode("latin-1")[:-2].split(":")[0], raw.decode("latin-1")[:-2].split(":"))
+	def decode(self, group, buffer):
+		buffer = buffer.split(b"\x00")
+		for raw in buffer:
+			if raw: self.manage(group, raw.decode("latin-1")[:-2].split(":")[0], raw.decode("latin-1")[:-2].split(":"))
 
-  def pingTimer(self, group):
-    group.ping = True
-    while group.ping:
-      group.sendCmd("\r\n\x00")
-      time.sleep(20)
-    group.ping = False
+	def pingTimer(self, group):
+		group.ping = True
+		while group.ping:
+			group.sendCmd("\r\n\x00")
+			time.sleep(20)
+		group.ping = False
 
-  def main(self):
-    self.run()
-    while self.connected:
-      rSocks, wSocks, eSocks = select.select(self.cArray, [x for x in self.cArray if x.wbuf], self.cArray)
-      for wSock in wSocks:
-        try: wSock.chSocket.send(wSock.wbuf)
-        except BrokenPipeError: wSock.disconnect()
-        wSock.wbuf = b""
-      for rSock in rSocks:
-        rbuf = b""
-        while not rbuf.endswith(b'\x00'):
-          try: rbuf += rSock.chSocket.recv(1024) #need the WHOLE buffer ;D
-          except OSError: rSock.disconnect()
-        if len(rbuf) > 0: self.decode(rSock, rbuf)
-      time.sleep(0.1)
-    [x.chSocket.close() for x in self.cArray]
+	def main(self):
+		self.run()
+		while self.connected:
+			rSocks, wSocks, eSocks = select.select(self.cArray, [x for x in self.cArray if x.wbuf], self.cArray)
+			for wSock in wSocks:
+				try: wSock.chSocket.send(wSock.wbuf)
+				except BrokenPipeError: wSock.disconnect()
+				wSock.wbuf = b""
+			for rSock in rSocks:
+				rbuf = b""
+				while not rbuf.endswith(b'\x00'):
+					try: rbuf += rSock.chSocket.recv(1024) #need the WHOLE buffer ;D
+					except OSError: rSock.disconnect()
+				if len(rbuf) > 0: self.decode(rSock, rbuf)
+			time.sleep(0.1)
+		[x.chSocket.close() for x in self.cArray]
