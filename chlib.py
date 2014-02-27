@@ -441,7 +441,7 @@ class ConnectionManager:
 	def pingTimer(self, group):
 		group.ping = True
 		while group.ping:
-			group.sendCmd("\r\n\x00")
+			group.sendCmd("")
 			time.sleep(20)
 		group.ping = False
 
