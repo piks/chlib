@@ -269,7 +269,7 @@ class ConnectionManager:
 		if self in self.cArray: self.cArray.remove(self)
 
 	def stop(self): 
-		[x.chSocket.close() for x in self.cArray
+		[x.chSocket.close() for x in self.cArray]
 		self.connected = False
 
 	def sendCmd(self, *args, firstcmd = False):
