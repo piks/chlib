@@ -4,7 +4,7 @@
 #Description: My take on a flexable chatango library.
 #Contact: charizard.chatango.com
 #Release date: 7/31/2013
-#Version: 1.5
+#Version: 1.6
 ################################
 
 ################################
@@ -27,6 +27,7 @@ specials = {"de-livechat": 5, "ver-anime": 8, "watch-dragonball": 8, "narutowire
 
 
 def getServer(group):
+	'''Return server number'''
 	s_num = None
 	if group in specials.keys(): s_num = specials[group]
 	else:
@@ -49,6 +50,7 @@ def getServer(group):
 class Generate:
 
 	def aid(self, n, uid):
+		'''Generate Anon ID number'''
 		try:
 			if (int(n) == 0) or (len(n) < 4): n = "3452"
 		except ValueError: n = "3452"
@@ -58,13 +60,14 @@ class Generate:
 		return v5
 
 	def auth(self):
+		'''Generate auth token'''
 		auth = urllib.request.urlopen("http://chatango.com/login",
-																	urllib.parse.urlencode({
-																	"user_id": self.user,
-																	"password": self.password,
-																	"storecookie": "on",
-																	"checkerrors": "yes" }).encode()
-																	).getheader("Set-Cookie")
+										urllib.parse.urlencode({
+										"user_id": self.user,
+										"password": self.password,
+										"storecookie": "on",
+										"checkerrors": "yes" }).encode()
+										).getheader("Set-Cookie")
 		try: return re.search("auth.chatango.com=(.*?);", auth).group(1)
 		except: return None
 
@@ -104,33 +107,43 @@ class Group:
 
 	def fileno(self): return self.chSocket.fileno()
 	def connect(self):
+		'''Start socket connections'''
 		self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.chSocket.setblocking(True)
 		self.chSocket.connect(("s"+str(self.snum)+".chatango.com", 443))
 		t = threading.Timer(20, self.manager.pingTimer, (self,))
-		t.setDaemon(True)
+		t.daemon = True
 		t.start()
-		self.wbuf += bytes("bauth:"+self.name+":"+self.uid+":"+self.user+":"+self.password+"\x00", "utf-8")
+		self.sendCmd("bauth", self.name, self.uid, self.user, self.password, firstcmd=True)
 
 	def disconnect(self):
+		'''Gracefully disconnect from socket'''
 		self.chSocket.close()
 		if self in self.manager.cArray: self.manager.cArray.remove(self)
 
 	def getBanList(self):
+		'''Retreive ban list'''
 		self.blist = list()
 		self.sendCmd("blocklist", "block", "", "next", "500")
 
-	def sendCmd(self, *args): self.wbuf += bytes(':'.join(args)+"\r\n\x00", "utf-8")
+	def sendCmd(self, *args, firstcmd = False):
+		'''Send data to socket'''
+		if not firstcmd: self.wbuf += bytes(':'.join(args)+"\r\n\x00", "latin-1")
+		else: self.wbuf += bytes(':'.join(args)+"\x00", "latin-1")
+
 	def getLastPost(self, match, data = "user"):
+		'''Retreive last post object from user'''
 		try: post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
 		except: post = None
 		return post
 
 	def sendPost(self, post, html = True):
+		'''Send a post to the group'''
 		if not html: post = post.replace("<", "&lt;").replace(">", "&gt;")
 		if len(post) < 2700 and self.limited == 0: self.sendCmd("bmsg", "t12r", "<n"+self.nColor+"/><f x"+self.fSize+self.fColor+"=\""+self.fFace+"\">"+post)
 
 	def login(self, user, password = None):
+		'''Login to an account or as a temporary user or anon'''
 		if user and password:
 			self.sendCmd("blogin", user, password) #user
 			self.user = user
@@ -160,19 +173,21 @@ class Group:
 		else: return 0
 
 	def getBan(self, user):
+		'''Get banned object for a user'''
 		banned = [x for x in self.blist if x.user == user]
 		if banned: return banned[0]
 		else: return None
 
 	def dlPost(self, post): self.sendCmd("delmsg", post.pid)
-
 	def dlUser(self, user):
+		'''Delete all of a user's posts'''
 		post = self.getLastPost(user)
 		unid = None
 		if post: unid = post.unid
 		if unid: self.sendCmd("delallmsg", unid, "")
 
 	def ban(self, user):
+		'''Ban a user'''
 		unid = None
 		ip = None
 		try:
@@ -185,10 +200,12 @@ class Group:
 		self.getBanList()
 
 	def flag(self, user):
+		'''Flag a user'''
 		pid = self.getLastPost(user).pid
 		self.sendCmd("g_flag", pid)
 
 	def unban(self, user):
+		'''Unban a user'''
 		banned = [x for x in self.blist if x.user == user]
 		if banned:
 			self.sendCmd("removeblock", banned[0].unid, banned[0].ip, banned[0].user)
@@ -234,24 +251,31 @@ class ConnectionManager:
 	def fileno(self): return self.chSocket.fileno()
 
 	def connect(self):
+		'''Connect to PM'''
 		self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.chSocket.setblocking(True)
 		self.chSocket.connect(("c1.chatango.com", 5222))
 		self.pmAuth = Generate.auth(self)
 		t = threading.Timer(20, self.pingTimer, (self,))
-		t.setDaemon(True)
+		t.daemon = True
 		t.start()
-		self.wbuf += bytes("tlogin:"+self.pmAuth+":2:"+self.uid+"\x00", "utf-8")
+		self.sendCmd("tlogin", self.pmAuth, "2", self.uid, firstcmd=True)
 		self.cArray.append(self)
 		self.connected = True
 
 	def disconnect(self):
+		'''Gracefully disconnect from PM'''
 		self.chSocket.close()
 		if self in self.cArray: self.cArray.remove(self)
 
-	def sendCmd(self, *args): self.wbuf += bytes(':'.join(args)+"\r\n\x00", "utf-8")
+	def stop(self): [[x.chSocket.close() for x in self.cArray], self.connected = False]
+	def sendCmd(self, *args, firstcmd = False):
+		'''Send data to socket'''
+		if not firstcmd: self.wbuf += bytes(':'.join(args)+"\r\n\x00", "latin-1")
+		else: self.wbuf += bytes(':'.join(args)+"\x00", "latin-1")
 
 	def addGroup(self, group):
+		'''Join a group'''
 		if not self.getGroup(group) in self.cArray:
 			group = Group(self, group, self.user, self.password, self.uid)
 			self.cArray.append(group)
@@ -259,6 +283,7 @@ class ConnectionManager:
 		self.connected = True
 
 	def removeGroup(self, group):
+		'''Leave a group'''
 		group = self.getGroup(group)
 		if group in self.cArray:
 			self.cArray.remove(group)
@@ -270,10 +295,12 @@ class ConnectionManager:
 			self.connected = False
 
 	def getGroup(self, group):
+		'''Get a group object'''
 		group = [g for g in self.cArray if g.name == group]
 		if group: return group[0]
 
 	def getUser(self, user):
+		'''Get all groups a user is in'''
 		groups = list()
 		for group in self.cArray:
 			if hasattr(group, "users"):
@@ -285,7 +312,7 @@ class ConnectionManager:
 	def sendPM(self, user, pm): self.sendCmd("msg", user, "<n"+self.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+self.fSize+"s"+self.fColor+"=\""+self.fFace+"\">"+pm+"</g></g></m>")
 
 	def manage(self, group, cmd, bites):
-
+		'''Manage socket data'''
 		args = [group]
 		
 		if cmd == "denied":
@@ -439,6 +466,7 @@ class ConnectionManager:
 			if raw: self.manage(group, raw.decode("latin-1")[:-2].split(":")[0], raw.decode("latin-1")[:-2].split(":"))
 
 	def pingTimer(self, group):
+		'''Ping? Pong!'''
 		group.ping = True
 		while group.ping:
 			group.sendCmd("\r\n\x00")
@@ -446,6 +474,7 @@ class ConnectionManager:
 		group.ping = False
 
 	def main(self):
+		'''Main connection handler'''
 		self.run()
 		while self.connected:
 			rSocks, wSocks, eSocks = select.select(self.cArray, [x for x in self.cArray if x.wbuf], self.cArray)
