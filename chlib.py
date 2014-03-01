@@ -268,7 +268,10 @@ class ConnectionManager:
 		self.chSocket.close()
 		if self in self.cArray: self.cArray.remove(self)
 
-	def stop(self): [[x.chSocket.close() for x in self.cArray], self.connected = False]
+	def stop(self): 
+		[x.chSocket.close() for x in self.cArray
+		self.connected = False
+
 	def sendCmd(self, *args, firstcmd = False):
 		'''Send data to socket'''
 		if not firstcmd: self.wbuf += bytes(':'.join(args)+"\r\n\x00", "latin-1")
