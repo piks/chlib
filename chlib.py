@@ -18,10 +18,12 @@ import re
 import urllib.request
 import random
 import threading
+import queue
 
 ################################
 #Get server number
 ################################
+
 weights = [['5', 75], ['6', 75], ['7', 75], ['8', 75], ['16', 75], ['17', 75], ['18', 75], ['9', 95], ['11', 95], ['12', 95], ['13', 95], ['14', 95], ['15', 95], ['19', 110], ['23', 110], ['24', 110], ['25', 110], ['26', 110], ['28', 104], ['29', 104], ['30', 104], ['31', 104], ['32', 104], ['33', 104], ['35', 101], ['36', 101], ['37', 101], ['38', 101], ['39', 101], ['40', 101], ['41', 101], ['42', 101], ['43', 101], ['44', 101], ['45', 101], ['46', 101], ['47', 101], ['48', 101], ['49', 101], ['50', 101], ['52', 110], ['53', 110], ['55', 110], ['57', 110], ['58', 110], ['59', 110], ['60', 110], ['61', 110], ['62', 110], ['63', 110], ['64', 110], ['65', 110], ['66', 110], ['68', 95], ['71', 116], ['72', 116], ['73', 116], ['74', 116], ['75', 116], ['76', 116], ['77', 116], ['78', 116], ['79', 116], ['80', 116], ['81', 116], ['82', 116], ['83', 116], ['84', 116]]
 specials = {"de-livechat": 5, "ver-anime": 8, "watch-dragonball": 8, "narutowire": 10, "dbzepisodeorg": 10, "animelinkz": 20, "kiiiikiii": 21, "soccerjumbo": 21, "vipstand": 21, "cricket365live": 21, "pokemonepisodeorg": 22, "watchanimeonn": 22, "leeplarp": 27, "animeultimacom": 34, "rgsmotrisport": 51, "cricvid-hitcric-": 51, "tvtvanimefreak": 54, "stream2watch3": 56, "mitvcanal": 56, "sport24lt": 56, "ttvsports": 56, "eafangames": 56, "myfoxdfw": 67, "peliculas-flv": 69, "narutochatt": 70}
 
@@ -105,7 +107,10 @@ class Group:
 		self.nColor = "CCC"
 		self.connect()
 
-	def fileno(self): return self.chSocket.fileno()
+	def fileno(self):
+		'''Return socket file descriptor'''
+		return self.chSocket.fileno()
+
 	def connect(self):
 		'''Start socket connections'''
 		self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -152,19 +157,41 @@ class Group:
 			self.sendCmd("blogin", user) #temporary user
 		else: self.sendCmd("blogin")
 
-	def logout(self): self.sendCmd("blogout")
+	def logout(self):
+		'''Log's out of an account'''
+		self.sendCmd("blogout")
 
-	def enableBg(self): self.sendCmd("getpremium", "1")
-	def disableBg(self): self.sendCmd("msgbg", "0")
+	def enableBg(self):
+		'''Enables background'''
+		self.sendCmd("getpremium", "1")
 
-	def enableVr(self): self.sendCmd("msgmedia", "1")
-	def disableVr(self): self.sendCmd("msgmedia", "0")
+	def disableBg(self):
+		'''Disables background'''
+		self.sendCmd("msgbg", "0")
 
-	def setNameColor(self, nColor): self.nColor = nColor
-	def setFontColor(self, fColor): self.fColor = fColor
+	def enableVr(self):
+		'''Enable group's VR on each post'''
+		self.sendCmd("msgmedia", "1")
+
+	def disableVr(self):
+		'''Disable group's VR on each post'''
+		self.sendCmd("msgmedia", "0")
+
+	def setNameColor(self, nColor):
+		'''Set's a user's name color'''
+		self.nColor = nColor
+
+	def setFontColor(self, fColor):
+		'''Set's a user's font color'''
+		self.fColor = fColor
+
 	def setFontSize(self, fSize):
+		'''Set's a user's font size'''
 		if int(fSize) < 23: self.fSize = fSize
-	def setFontFace(self, fFace): self.fFace = fFace
+
+	def setFontFace(self, fFace):
+		'''Set's a user's font face'''
+		self.fFace = fFace
 
 	def getAuth(self, user):
 		"""return the users group level 2 = owner 1 = mod	0 = user"""
@@ -211,12 +238,20 @@ class Group:
 			self.sendCmd("removeblock", banned[0].unid, banned[0].ip, banned[0].user)
 			self.getBanList()
 
-	def setMod(self, mod): self.sendCmd("addmod", mod)
-	def eraseMod(self, mod): self.sendCmd("removemod", mod)
+	def setMod(self, mod):
+		'''Add's a group moderator'''
+		self.sendCmd("addmod", mod)
+
+	def eraseMod(self, mod):
+		'''Removes a group moderator'''
+		self.sendCmd("removemod", mod)
+
 	def clearGroup(self):
+		'''Deletes all messages'''
 		if self.user == self.owner: self.sendCmd("clearall")
 		else: #;D
-			for history in list(self.pArray.values()): self.sendCmd("delmsg", history.pid)
+			for history in list(self.pArray.values()):
+				self.sendCmd("delmsg", history.pid)
 	
 ################################
 #Connections Manager
@@ -248,7 +283,9 @@ class ConnectionManager:
 		self.prefix = None
 		if self.pm: self.connect()
 
-	def fileno(self): return self.chSocket.fileno()
+	def fileno(self):
+		'''return socket file descriptor'''
+		return self.chSocket.fileno()
 
 	def connect(self):
 		'''Connect to PM'''
@@ -268,7 +305,8 @@ class ConnectionManager:
 		self.chSocket.close()
 		if self in self.cArray: self.cArray.remove(self)
 
-	def stop(self): 
+	def stop(self):
+		'''Gracefully disconnect from all connections'''
 		[x.chSocket.close() for x in self.cArray]
 		self.connected = False
 
@@ -311,8 +349,13 @@ class ConnectionManager:
 		if groups: return groups
 		else: return None
 
-	def cleanPM(self, pm): return re.sub("<i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/> ", "", re.sub(" <i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/>", "", re.sub("<mws c='(.*?)' s='(.*?)'/>", "", re.sub("<g x(.*?)\">", "", re.sub("<n(.*?)/>", "", re.sub("</(.*?)>", "", pm.replace("<m v=\"1\">", "").replace("<g xs0=\"0\">", "")))))))
-	def sendPM(self, user, pm): self.sendCmd("msg", user, "<n"+self.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+self.fSize+"s"+self.fColor+"=\""+self.fFace+"\">"+pm+"</g></g></m>")
+	def cleanPM(self, pm):
+		'''Clean's all PM XML'''
+		return re.sub("<i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/> ", "", re.sub(" <i s=\"sm://(.*?)\" w=\"(.*?)\" h=\"(.*?)\"/>", "", re.sub("<mws c='(.*?)' s='(.*?)'/>", "", re.sub("<g x(.*?)\">", "", re.sub("<n(.*?)/>", "", re.sub("</(.*?)>", "", pm.replace("<m v=\"1\">", "").replace("<g xs0=\"0\">", "")))))))
+
+	def sendPM(self, user, pm):
+		'''Send's a PM to the PM socket'''
+		self.sendCmd("msg", user, "<n"+self.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+self.fSize+"s"+self.fColor+"=\""+self.fFace+"\">"+pm+"</g></g></m>")
 
 	def manage(self, group, cmd, bites):
 		'''Manage socket data'''
@@ -339,7 +382,8 @@ class ConnectionManager:
 			group.sendCmd("getratelimit")
 
 		elif cmd == "premium":
-			if int(bites[2]) > time.time(): group.sendCmd("msgbg", "1")
+			if int(bites[2]) > time.time():
+				group.sendCmd("msgbg", "1")
 
 		elif cmd == "getratelimit":
 			group.limit = int(bites[1])
@@ -361,7 +405,9 @@ class ConnectionManager:
 				lastUid = group.blist[-1].uid
 				group.sendCmd("blocklist", "block", lastUid, "next", "500")
 
-		elif cmd == "bw": group.bw = bites[2].split("%2C")
+		elif cmd == "bw":
+			group.bw = bites[2].split("%2C")
+
 		elif cmd == 'participant':
 			user = None
 			if (bites[1] == '0') and (bites[4] != "None") and (bites[4].lower() in group.users):
@@ -371,8 +417,12 @@ class ConnectionManager:
 				group.users.sort()
 			args = [bites[1], group, user, bites[3]]
 
-		elif cmd == "ratelimited": group.limit = int(bites[1])
-		elif cmd == "ratelimitset": group.limit = int(bites[1])
+		elif cmd == "ratelimited":
+			group.limit = int(bites[1])
+
+		elif cmd == "ratelimitset":
+			group.limit = int(bites[1])
+
 		elif cmd == "getratelimit":
 			group.limit = int(bites[1])
 			group.limited = int(bites[2])
@@ -398,7 +448,9 @@ class ConnectionManager:
 					if post.post[0] == self.prefix: self.recvCommand(post.user, group, group.getAuth(post.user), post, post.post.split()[0][1:].lower(), " ".join(post.post.split()[1:]))
 			except KeyError: pass
 
-		elif cmd == "n": group.unum = bites[1]
+		elif cmd == "n":
+			group.unum = bites[1]
+
 		elif cmd == "mods":
 			mlist = bites[1:]
 			mod = ""
@@ -441,7 +493,9 @@ class ConnectionManager:
 					args = [group, bites[3], bites[4]]
 				else: args = [group, "Non-member", bites[4]]
 
-		elif cmd == "logoutok": group.user	= "!anon" + Generate.aid(self, self.nColor, group.uid)
+		elif cmd == "logoutok":
+			group.user	= "!anon" + Generate.aid(self, self.nColor, group.uid)
+
 		elif cmd == "clearall":
 			if bites[1] == "ok": group.pArray = {}
 
@@ -453,20 +507,27 @@ class ConnectionManager:
 			mins, secs = divmod(int(bites[1]), 60)
 			args = [group, mins, secs]
 
-		elif cmd == "OK": self.sendCmd("wl")
+		elif cmd == "OK":
+			self.sendCmd("wl")
+
 		elif cmd == "wl":
 			for i in range(1, len(bites), 4): self.fl.append(bites[i])
 			self.fl.sort()
 
-		elif cmd == "msg": args = [bites[1], self.cleanPM(":".join(bites[6:]))]
-		elif cmd == "msgoff": args = [bites[1], self.cleanPM(":".join(bites[6:]))]
+		elif cmd == "msg":
+			args = [bites[1], self.cleanPM(":".join(bites[6:]))]
 
-		if hasattr(self, "recv"+cmd) and None not in args: getattr(self, "recv"+cmd)(*args)
+		elif cmd == "msgoff":
+			args = [bites[1], self.cleanPM(":".join(bites[6:]))]
+
+		if hasattr(self, "recv"+cmd) and None not in args:
+			getattr(self, "recv"+cmd)(*args)
 
 	def decode(self, group, buffer):
 		buffer = buffer.split(b"\x00")
 		for raw in buffer:
-			if raw: self.manage(group, raw.decode("latin-1")[:-2].split(":")[0], raw.decode("latin-1")[:-2].split(":"))
+			if raw:
+				self.manage(group, raw.decode("latin-1")[:-2].split(":")[0], raw.decode("latin-1")[:-2].split(":"))
 
 	def pingTimer(self, group):
 		'''Ping? Pong!'''
