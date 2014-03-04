@@ -405,10 +405,6 @@ class ConnectionManager:
 			if int(bites[2]) > time.time():
 				group.sendCmd("msgbg", "1")
 
-		elif cmd == "getratelimit":
-			group.limit = int(bites[1])
-			group.limited = int(bites[2])
-
 		elif cmd == "g_participants":
 			pl = ":".join(bites[1:]).split(";")
 			for p in pl:
@@ -446,7 +442,6 @@ class ConnectionManager:
 		elif cmd == "getratelimit":
 			group.limit = int(bites[1])
 			group.limited = int(bites[2])
-
 		elif cmd == 'b':
 			try:
 				fTag = re.search("<f x(.*?)>", bites[10]).group(1)
