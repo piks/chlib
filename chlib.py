@@ -161,6 +161,7 @@ class Group:
 						self.manager.removeGroup(self)
 				if len(rbuf) > 0:
 					self.manager.decode(self, rbuf)
+			time.sleep(0.1)
 		self.wqueue.task_done()
 
 	def ping(self):
