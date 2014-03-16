@@ -1,0 +1,6 @@
+This is a beta channel, and as such, there will be bugs.
+If you discover any bugs, please PM charizard on chatango. Thank you.
+
+KNOWN BUGS
+
+- self.stop() only disconnects from half of the groups in cArray
