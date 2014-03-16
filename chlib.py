@@ -367,8 +367,11 @@ class ConnectionManager:
 
 	def sendPM(self, user, pm):
 		'''Send's a PM'''
-		group = self.getGroup()
-		group.sendCmd("msg", user, "<n"+group.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+group.fSize+"s"+group.fColor+"=\""+group.fFace+"\">"+pm+"</g></g></m>")
+		self.sendCmd("msg", user, "<n"+group.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+group.fSize+"s"+group.fColor+"=\""+group.fFace+"\">"+pm+"</g></g></m>")
+
+	def sendCmd(self, *args):
+		'''Send data to socket'''
+		self.wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "latin-1"))
 
 	def manage(self, group, cmd, bites):
 		'''Manage socket data'''
