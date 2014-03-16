@@ -2,7 +2,7 @@ import chlib
 
 class Bot(chlib.ConnectionManager):
 
-		def run(self):
+		def start(self):
 			groups = ["example", "example2"] #list your group names instead
 			for group in groups: self.addGroup(group)
 			self.prefix = "!" #optional, just won't call any commands if not specified.
@@ -14,10 +14,10 @@ class Bot(chlib.ConnectionManager):
 			print("Connected to "+group.name)
 
 		def recvOK(self, group):
-			print("Connected to "+group.name)
+			print("Connected to PM\'s")
 
 		def recvRemove(self, group):
-			print("Disconnected from "+group.name)
+			print("Disconnected from "+group.name if group.name else "PM\'s")
 
 		def recvCommand(self, user, group, auth, post, cmd, args):
 			if cmd == "a": group.sendPost("AAAAAAAAAAAAAA")
