@@ -135,7 +135,7 @@ class Group:
 		self.pthread = threading.Timer(20, self.ping)
 		self.pthread.daemon = True
 		self.pthread.start()
-		self.mthread = threading.Thread(target=self.manage)
+		self.mthread = threading.Thread(target=self.manage, name=str(group.name))
 		self.mthread.daemon = True
 		self.mthread.start()
 
@@ -245,7 +245,7 @@ class Group:
 		self.fFace = fFace
 
 	def getAuth(self, user):
-		'''return the users group level 2 = owner 1 = mod	0 = user'''
+		'''return the users group level 2 = owner 1 = mod 0 = user'''
 		if user == self.owner: return 2
 		if user in self.mods: return 1
 		else: return 0
@@ -327,7 +327,8 @@ class ConnectionManager:
 
 	def stop(self):
 		'''disconnect from all groups'''
-		for group in self.cArray:
+		g = list(self.cArray)
+		for group in g:
 			self.removeGroup(group)
 
 	def addGroup(self, group = None):
