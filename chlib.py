@@ -135,7 +135,7 @@ class Group:
 		self.pthread = threading.Timer(20, self.ping)
 		self.pthread.daemon = True
 		self.pthread.start()
-		self.mthread = threading.Thread(target=self.manage, name=str(group.name))
+		self.mthread = threading.Thread(target=self.manage, name=str(self.name))
 		self.mthread.daemon = True
 		self.mthread.start()
 
