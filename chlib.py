@@ -371,7 +371,7 @@ class ConnectionManager:
 
 	def sendCmd(self, *args):
 		'''Send data to socket'''
-		self.wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "latin-1"))
+		self.getGroup().wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "latin-1"))
 
 	def manage(self, group, cmd, bites):
 		'''Manage socket data'''
