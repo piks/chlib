@@ -162,14 +162,12 @@ class Group:
 				if len(rbuf) > 0:
 					self.manager.decode(self, rbuf)
 			time.sleep(0.1)
-		self.wqueue.task_done()
 
 	def ping(self):
 		'''Ping? Pong!'''
 		while self.connected:
 			self.sendCmd("\r\n\x00")
 			time.sleep(20)
-		self.pthread.cancel()
 
 	def cleanPM(self, pm):
 		'''Clean's all PM XML'''
