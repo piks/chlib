@@ -182,8 +182,8 @@ class Group:
 
 	def sendCmd(self, *args, firstcmd = False):
 		'''Send data to socket'''
-		if not firstcmd: self.wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "latin-1"))
-		else: self.wqueue.put_nowait(bytes(':'.join(args)+"\x00", "latin-1"))
+		if not firstcmd: self.wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "utf-8"))
+		else: self.wqueue.put_nowait(bytes(':'.join(args)+"\x00", "utf-8"))
 
 	def getBanList(self):
 		'''Retreive ban list'''
@@ -371,7 +371,7 @@ class ConnectionManager:
 
 	def sendCmd(self, *args):
 		'''Send data to socket'''
-		self.getGroup().wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "latin-1"))
+		self.getGroup().wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "utf-8"))
 
 	def manage(self, group, cmd, bites):
 		'''Manage socket data'''
@@ -543,7 +543,7 @@ class ConnectionManager:
 		buffer = buffer.split(b"\x00")
 		for raw in buffer:
 			if raw:
-				data = raw.decode("latin-1")[:-2].split(":")
+				data = raw.decode("utf-8")[:-2].split(":")
 				self.manage(group, data[0], data)
 
 	def main(self):
