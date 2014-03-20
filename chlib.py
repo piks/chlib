@@ -543,7 +543,7 @@ class ConnectionManager:
 		buffer = buffer.split(b"\x00")
 		for raw in buffer:
 			if raw:
-				data = raw.decode("utf-8")[:-2].split(":")
+				data = raw.decode("latin-1")[:-2].split(":")
 				self.manage(group, data[0], data)
 
 	def main(self):
