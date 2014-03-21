@@ -98,7 +98,7 @@ class Group:
 		self.fFace = "0"
 		self.fColor = "000"
 		self.connected = False
-		if group: #group variables
+		if self.name != self.user: #group variables
 			self.nColor = "CCC"
 			self.snum = getServer(group)
 			self.limit = 0
@@ -110,7 +110,7 @@ class Group:
 			self.mods = list()
 			self.owner = None
 			self.blist = list()
-		elif self.pm: #PM variables
+		else: #PM variables
 			self.nColor = "000"
 			self.pmAuth = None
 			self.ip = None
@@ -123,10 +123,10 @@ class Group:
 		'''connect to socket'''
 		self.chSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.chSocket.setblocking(True)
-		if self.name:
+		if self.name != self.user:
 			self.chSocket.connect(("s"+str(self.snum)+".chatango.com", 443))
 			self.sendCmd("bauth", self.name, self.uid, self.user, self.password, firstcmd=True)
-		elif self.pm:
+		else:
 			self.chSocket.connect(("c1.chatango.com", 5222))
 			self.pmAuth = Generate.auth(self)
 			self.sendCmd("tlogin", self.pmAuth, "2", self.uid, firstcmd=True)
@@ -329,12 +329,13 @@ class ConnectionManager:
 		for group in g:
 			self.removeGroup(group)
 
-	def addGroup(self, group = None):
+	def addGroup(self, group):
 		'''Join a group'''
 		if not self.getGroup(group) in self.cArray:
 			group = Group(self, group, self.user, self.password, self.uid, self.pm)
 			self.cArray.append(group)
-			self.groups.append(group.name)
+			if group.name != self.user:
+				self.groups.append(group.name)
 
 	def removeGroup(self, group):
 		'''Leave a group'''
@@ -349,7 +350,7 @@ class ConnectionManager:
 		if not self.cArray:
 			self.connected = False
 
-	def getGroup(self, group = None):
+	def getGroup(self, group):
 		'''Get a group object'''
 		group = [g for g in self.cArray if g.name == group]
 		if group:
@@ -367,11 +368,12 @@ class ConnectionManager:
 
 	def sendPM(self, user, pm):
 		'''Send's a PM'''
+		group = self.getGroup(self.user)
 		self.sendCmd("msg", user, "<n"+group.nColor+"/><m v=\"1\"><g xs0=\"0\"><g x"+group.fSize+"s"+group.fColor+"=\""+group.fFace+"\">"+pm+"</g></g></m>")
 
 	def sendCmd(self, *args):
 		'''Send data to socket'''
-		self.getGroup().wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "utf-8"))
+		self.getGroup(self.user).wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "utf-8"))
 
 	def manage(self, group, cmd, bites):
 		'''Manage socket data'''
@@ -548,5 +550,5 @@ class ConnectionManager:
 
 	def main(self):
 		self.start()
-		if self.pm: self.addGroup()
+		if self.pm: self.addGroup(self.user)
 		while self.connected: time.sleep(0.1)
