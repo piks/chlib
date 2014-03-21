@@ -342,7 +342,8 @@ class ConnectionManager:
 		if group in self.cArray:
 			group.connected = False
 			self.cArray.remove(group)
-			self.groups.remove(group.name)
+			if group.name != self.user:
+				self.groups.remove(group.name)
 			group.chSocket.close()
 			group.pthread.cancel()
 			self.recvRemove(group)
