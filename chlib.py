@@ -325,7 +325,7 @@ class ConnectionManager:
 
 	def stop(self):
 		'''disconnect from all groups'''
-		g = list(self.cArray)
+		g = list(self.groups)
 		for group in g:
 			self.removeGroup(group)
 
@@ -339,6 +339,7 @@ class ConnectionManager:
 
 	def removeGroup(self, group):
 		'''Leave a group'''
+		group = self.getGroup(group)
 		if group in self.cArray:
 			group.connected = False
 			self.cArray.remove(group)
