@@ -14,10 +14,10 @@ class Bot(chlib.ConnectionManager):
 			print("Connected to "+group.name)
 
 		def recvOK(self, group):
-			print("Connected to PM\'s")
+			print("Connected to "+group.name)
 
 		def recvRemove(self, group):
-			print("Disconnected from "+group.name if group.name != self.name else "PM\'s")
+			print("Disconnected from "+group.name)
 
 		def recvCommand(self, user, group, auth, post, cmd, args):
 			if cmd == "a": group.sendPost("AAAAAAAAAAAAAA")
@@ -30,12 +30,12 @@ class Bot(chlib.ConnectionManager):
 			self.sendPM(user, pm) # echo
 
 		def recvkickingoff(self, group):
-			self.disconnect()
-			self.connect()
+			self.removeGroup(group)
+			self.addGroup(group)
 
 		def recvtoofast(self, group):
-			self.disconnect()
-			self.connect()
+			self.removeGroup(group)
+			self.addGroup(group)
 
 if __name__ == "__main__": #no easy starting this time ;D
 		bot = Bot(user = "user", password = "password", pm = True)

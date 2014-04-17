@@ -75,6 +75,41 @@ class Generate:
 		except: return None
 
 ################################
+#Represents event objects
+################################
+
+class Event:
+
+	def __init__(self, group, name, interval, target, *args):
+		self.name = name
+		self.interval = interval
+		self.target = target
+		self.group = group
+		if hasattr(self.group, self.target):
+			if self.interval > 0:
+				self.loop = True
+				self.thread = threading.Timer(interval, self.create, args=(args))
+			else:
+				self.loop = False
+				self.thread = threading.Thread(target=self.create, name=self.name, args=(args))
+			self.active = True
+			self.thread.daemon = True
+			self.thread.start()
+			self.group.events.append(self)
+
+	def create(self, *args):
+			if self.loop:
+				while self.active:
+					getattr(self.group, self.target)(*args)
+					time.sleep(self.interval)
+			else:
+				getattr(self.group, self.target)(*args)
+
+	def cancel(self):
+		self.active = False
+		self.group.events.remove(self)
+
+################################
 #Represents connection objects
 ################################
 
@@ -90,8 +125,7 @@ class Group:
 		self.pm = pm
 		self.chSocket = None
 		self.wqueue = queue.Queue()
-		self.pthread = None
-		self.mthread = None
+		self.events = list()
 		self.loginFail = False
 		self.uid = str(int(random.randrange(10 ** 15, (10 ** 16) - 1)))
 		self.fSize = "11"
@@ -132,42 +166,34 @@ class Group:
 			self.sendCmd("tlogin", self.pmAuth, "2", self.uid, firstcmd=True)
 		self.connected = True
 		self.manager.connected = True
-		self.pthread = threading.Timer(20, self.ping)
-		self.pthread.daemon = True
-		self.pthread.start()
-		self.mthread = threading.Thread(target=self.manage, name=str(self.name))
-		self.mthread.daemon = True
-		self.mthread.start()
+		Event(self, self.name, 0.1, "manage")
+		Event(self, "ping", 20, "ping")
 
 	def manage(self):
-		while self.connected:
-			rbuf = b""
-			wbuf = b""
+		rbuf = b""
+		wbuf = b""
+		try:
+			rSock, wSock, eSock = select.select([self.chSocket], [self.chSocket], [self.chSocket])
+		except OSError:
+			pass
+		if wSock:
 			try:
-				rSock, wSock, eSock = select.select([self.chSocket], [self.chSocket], [self.chSocket])
-			except OSError:
+				wbuf = self.wqueue.get_nowait()
+				self.chSocket.send(wbuf)
+			except queue.Empty:
 				pass
-			if wSock:
+		if rSock:
+			while not rbuf.endswith(b'\x00'):
 				try:
-					wbuf = self.wqueue.get_nowait()
-					self.chSocket.send(wbuf)
-				except queue.Empty:
-					pass
-			if rSock:
-				while not rbuf.endswith(b'\x00'):
-					try:
-						rbuf += self.chSocket.recv(1024) #need the WHOLE buffer ;D
-					except:
-						self.manager.removeGroup(self)
-				if len(rbuf) > 0:
-					self.manager.decode(self, rbuf)
-			time.sleep(0.1)
+					rbuf += self.chSocket.recv(1024) #need the WHOLE buffer ;D
+				except:
+					self.manager.removeGroup(self)
+			if len(rbuf) > 0:
+				self.manager.decode(self, rbuf)
 
 	def ping(self):
 		'''Ping? Pong!'''
-		while self.connected:
-			self.sendCmd("\r\n\x00")
-			time.sleep(20)
+		self.sendCmd("\r\n\x00")
 
 	def cleanPM(self, pm):
 		'''Clean's all PM XML'''
@@ -195,6 +221,10 @@ class Group:
 		try: post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
 		except: post = None
 		return post
+
+	def getEvent(self, name):
+		event = [x for x in self.events if x.name == name]
+		return event[0] if event else None
 
 	def login(self, user, password = None):
 		'''Login to an account or as a temporary user or anon'''
@@ -345,10 +375,10 @@ class ConnectionManager:
 			self.cArray.remove(group)
 			if group.name != self.user:
 				self.groups.remove(group.name)
+			for event in group.events:
+				event.cancel()
 			group.chSocket.close()
-			group.pthread.cancel()
 			self.recvRemove(group)
-			group.connected = False
 		if not self.cArray:
 			self.connected = False
 
@@ -518,6 +548,12 @@ class ConnectionManager:
 		elif cmd == "clearall":
 			if bites[1] == "ok": group.pArray = {}
 
+		elif cmd == "kickingoff":
+			args = [group.name]
+
+		elif cmd == "toofast":
+			args = [group.name]
+
 		elif cmd == "tb":
 			mins, secs = divmod(int(bites[1]), 60)
 			args = [group, mins, secs]
@@ -530,8 +566,12 @@ class ConnectionManager:
 			group.sendCmd("wl")
 
 		elif cmd == "wl":
-			for i in range(1, len(bites), 4): group.fl.append(bites[i])
-			group.fl.sort()
+			if len(bites) >= 4:
+				for i in range(1, len(bites), 4):
+					group.fl.append({"user": bites[i], "time": bites[i+1], "status": bites[i+2]})
+
+		elif cmd == "wladd":
+			group.fl.append({"user": bites[1], "status": bites[2], "time": bites[3]})
 
 		elif cmd == "msg":
 			args = [bites[1], group.cleanPM(":".join(bites[6:]))]
