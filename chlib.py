@@ -85,7 +85,7 @@ class Event:
 		self.interval = interval
 		self.target = target
 		self.group = group
-		if hasattr(self.group, self.target):
+		if hasattr(self.group, self.target) and not self.group.getEvent(self.name):
 			if self.interval > 0:
 				self.loop = True
 				self.thread = threading.Timer(interval, self.create, args=(args))
