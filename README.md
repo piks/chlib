@@ -3,8 +3,6 @@ chlib
 
 A chatango library with a flexible manager.
 
-NOTE: Beta channel is now live on chlib-test. Latest code will be submitted there then merged when it's stable.
-
 Requirements: This library requires at this time to have python 3 or greater installed.
 
 Method enabling: no longer needed, each method can be added or removed in the bot without any changes to the library.
