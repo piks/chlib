@@ -2,7 +2,7 @@ import chlib
 
 class Bot(chlib.ConnectionManager):
 
-		def run(self):
+		def start(self):
 			groups = ["example", "example2"] #list your group names instead
 			for group in groups: self.addGroup(group)
 			self.prefix = "!" #optional, just won't call any commands if not specified.
@@ -30,12 +30,12 @@ class Bot(chlib.ConnectionManager):
 			self.sendPM(user, pm) # echo
 
 		def recvkickingoff(self, group):
-			self.disconnect()
-			self.connect()
+			self.removeGroup(group)
+			self.addGroup(group)
 
 		def recvtoofast(self, group):
-			self.disconnect()
-			self.connect()
+			self.removeGroup(group)
+			self.addGroup(group)
 
 if __name__ == "__main__": #no easy starting this time ;D
 		bot = Bot(user = "user", password = "password", pm = True)
