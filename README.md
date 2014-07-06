@@ -1,7 +1,9 @@
 chlib
 =====
 
-A chatango library with a flexible manager.
+A chatango library with a flexable manager - Stable channel.
+
+Dev channel can be found at https://github.com/cellsheet/chlib/tree/chlib-dev
 
 Requirements: This library requires at this time to have python 3 or greater installed.
 
