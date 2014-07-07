@@ -169,8 +169,8 @@ class Group:
 			self.sendCmd("tlogin", self.pmAuth, "2", self.uid, firstcmd=True)
 		self.connected = True
 		self.manager.connected = True
-		Event(self, self.name, 0.1, "manage")
-		Event(self, "ping", 20, "ping")
+		Event(self, self.name, 0.1, 0, "manage")
+		Event(self, "ping", 20, 0, "ping")
 
 	def manage(self):
 		rbuf = b""
