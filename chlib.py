@@ -488,7 +488,7 @@ class ConnectionManager:
 				fSize = "11"
 				fColor = "000"
 				fFace = "0"
-			group.pArray[int(bites[6])] = type("Post", (object,), {"group": group, "time": bites[1], "user": bites[2].lower() if bites[2] != '' else "#" + bites[3] if bites[3] != '' else "!anon" + Generate.aid(self, re.search("<n(.*?)/>", bites[10]).group(1), bites[4]) if re.search("<n(.*?)/>", bites[10]) != None else "!anon" , "uid": bites[4], "unid": bites[5], "pnum": bites[6], "ip": bites[7], "post": re.sub("<(.*?)>", "", ":".join(bites[10:])).replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&"), "nColor": re.search("<n(.*?)/>", bites[10]).group(1) if re.search("<n(.*?)/>", bites[10]) else "000", "fSize": fSize, "fFace": fFace, "fColor": fColor})
+			group.pArray[bites[6]] = type("Post", (object,), {"group": group, "time": bites[1], "user": bites[2].lower() if bites[2] != '' else "#" + bites[3] if bites[3] != '' else "!anon" + Generate.aid(self, re.search("<n(.*?)/>", bites[10]).group(1), bites[4]) if re.search("<n(.*?)/>", bites[10]) != None else "!anon" , "uid": bites[4], "unid": bites[5], "pnum": bites[6], "ip": bites[7], "post": re.sub("<(.*?)>", "", ":".join(bites[10:])).replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&"), "nColor": re.search("<n(.*?)/>", bites[10]).group(1) if re.search("<n(.*?)/>", bites[10]) else "000", "fSize": fSize, "fFace": fFace, "fColor": fColor})
 
 		elif cmd == 'u':
 			try:
@@ -520,14 +520,14 @@ class ConnectionManager:
 				deleted = group.getLastPost(pid, "pid")
 				if deleted:
 					args = [group, deleted]
-					del group.pArray[int(deleted.pnum)]
+					del group.pArray[deleted.pnum]
 				else: args = [group, None]
 
 		elif cmd == "delete":
 			deleted = group.getLastPost(bites[1], "pid")
 			if deleted:
 				args = [group, deleted]
-				del group.pArray[int(deleted.pnum)]
+				del group.pArray[deleted.pnum]
 			else: args = [group, None]
 
 		elif cmd == "blocked":
@@ -590,7 +590,7 @@ class ConnectionManager:
 		buffer = buffer.split(b"\x00")
 		for raw in buffer:
 			if raw:
-				data = raw.decode("latin-1")[:-2].split(":")
+				data = raw.decode("latin-1").split(":")
 				self.manage(group, data[0], data)
 
 	def main(self):
