@@ -80,9 +80,10 @@ class Generate:
 
 class Event:
 
-	def __init__(self, group, name, interval, target, *args):
+	def __init__(self, group, name, interval, delay, target, *args):
 		self.name = name
 		self.interval = interval
+		self.delay = delay
 		self.target = target
 		self.group = group
 		if hasattr(self.group, self.target) and not self.group.getEvent(self.name):
@@ -98,12 +99,14 @@ class Event:
 			self.group.events.append(self)
 
 	def create(self, *args):
-			if self.loop:
-				while self.active:
-					getattr(self.group, self.target)(*args)
-					time.sleep(self.interval)
-			else:
+		if self.delay > 0:
+			time.sleep(self.delay)
+		if self.loop:
+			while self.active:
 				getattr(self.group, self.target)(*args)
+				time.sleep(self.interval)
+		else:
+			getattr(self.group, self.target)(*args)
 
 	def cancel(self):
 		self.active = False
