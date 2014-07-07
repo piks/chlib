@@ -492,7 +492,7 @@ class ConnectionManager:
 
 		elif cmd == 'u':
 			try:
-				post = group.pArray[int(bites[1])]
+				post = group.pArray[bites[1]]
 				setattr(post, "pid", bites[2])
 				if post.post: #not blank post
 					self.recvPost(post.user, group, group.getAuth(post.user), post)
