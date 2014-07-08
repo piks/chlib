@@ -324,7 +324,7 @@ class Group:
 			unid = self.getLastPost(user).unid
 			ip = self.getLastPost(user).ip
 		except:
-		pass
+			pass
 		if unid and ip:
 			if user[0] in ['#', '!']:
 				self.sendCmd("block", unid, ip, "")
