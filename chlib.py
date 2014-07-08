@@ -32,7 +32,8 @@ specials = {"de-livechat": 5, "ver-anime": 8, "watch-dragonball": 8, "narutowire
 def getServer(group):
 	'''Return server number'''
 	s_num = None
-	if group in specials.keys(): s_num = specials[group]
+	if group in specials.keys():
+		s_num = specials[group]
 	else:
 		group = group.replace('-', 'q').replace('_', 'q')
 		tmp8 = max(int(group[6:][:3], 36), 1000) if len(group) > 6 else 1000
@@ -56,23 +57,28 @@ class Generate:
 		'''Generate Anon ID number'''
 		try:
 			if (int(n) == 0) or (len(n) < 4): n = "3452"
-		except ValueError: n = "3452"
-		if n != "3452": n = str(int(n))[-4:]
+		except ValueError:
+			n = "3452"
+		if n != "3452":
+			n = str(int(n))[-4:]
 		v1, v5 = 0, ""
-		for i in range(0, len(n)): v5 += str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))[len(str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))) - 1:]
+		for i in range(0, len(n)):
+			v5 += str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))[len(str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))) - 1:]
 		return v5
 
 	def auth(self):
 		'''Generate auth token'''
 		auth = urllib.request.urlopen("http://chatango.com/login",
-										urllib.parse.urlencode({
-										"user_id": self.user,
-										"password": self.password,
-										"storecookie": "on",
-										"checkerrors": "yes" }).encode()
-										).getheader("Set-Cookie")
-		try: return re.search("auth.chatango.com=(.*?);", auth).group(1)
-		except: return None
+			urllib.parse.urlencode({
+			"user_id": self.user,
+			"password": self.password,
+			"storecookie": "on",
+			"checkerrors": "yes" }).encode()
+			).getheader("Set-Cookie")
+		try:
+			return re.search("auth.chatango.com=(.*?);", auth).group(1)
+		except:
+			return None
 
 ################################
 #Represents event objects
@@ -211,8 +217,10 @@ class Group:
 
 	def sendCmd(self, *args, firstcmd = False):
 		'''Send data to socket'''
-		if not firstcmd: self.wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "utf-8"))
-		else: self.wqueue.put_nowait(bytes(':'.join(args)+"\x00", "utf-8"))
+		if not firstcmd:
+			self.wqueue.put_nowait(bytes(':'.join(args)+"\r\n\x00", "utf-8"))
+		else:
+			self.wqueue.put_nowait(bytes(':'.join(args)+"\x00", "utf-8"))
 
 	def getBanList(self):
 		'''Retreive ban list'''
@@ -221,8 +229,10 @@ class Group:
 
 	def getLastPost(self, match, data = "user"):
 		'''Retreive last post object from user'''
-		try: post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
-		except: post = None
+		try:
+			post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
+		except:
+			post = None
 		return post
 
 	def getEvent(self, name):
@@ -269,7 +279,8 @@ class Group:
 
 	def setFontSize(self, fSize):
 		'''Set's a user's font size'''
-		if int(fSize) < 23: self.fSize = fSize
+		if int(fSize) < 23:
+			self.fSize = fSize
 
 	def setFontFace(self, fFace):
 		'''Set's a user's font face'''
@@ -277,15 +288,20 @@ class Group:
 
 	def getAuth(self, user):
 		'''return the users group level 2 = owner 1 = mod 0 = user'''
-		if user == self.owner: return 2
-		if user in self.mods: return 1
-		else: return 0
+		if user == self.owner:
+			return 2
+		if user in self.mods:
+			return 1
+		else:
+			return 0
 
 	def getBan(self, user):
 		'''Get banned object for a user'''
 		banned = [x for x in self.blist if x.user == user]
-		if banned: return banned[0]
-		else: return None
+		if banned:
+			return banned[0]
+		else:
+			return None
 
 	def dlPost(self, post):
 		'''delete a user's post'''
@@ -295,8 +311,10 @@ class Group:
 		'''Delete all of a user's posts'''
 		post = self.getLastPost(user)
 		unid = None
-		if post: unid = post.unid
-		if unid: self.sendCmd("delallmsg", unid, "")
+		if post:
+			unid = post.unid
+		if unid:
+			self.sendCmd("delallmsg", unid, "")
 
 	def ban(self, user):
 		'''Ban a user'''
@@ -305,10 +323,13 @@ class Group:
 		try:
 			unid = self.getLastPost(user).unid
 			ip = self.getLastPost(user).ip
-		except: pass
+		except:
+		pass
 		if unid and ip:
-			if (user.startswith("#")) or (user.startswith("!")): self.sendCmd("block", unid, ip, "")
-			else: self.sendCmd("block", unid, ip, user)
+			if user[0] in ['#', '!']:
+				self.sendCmd("block", unid, ip, "")
+			else:
+				self.sendCmd("block", unid, ip, user)
 		self.getBanList()
 
 	def flag(self, user):
@@ -333,7 +354,8 @@ class Group:
 
 	def clearGroup(self):
 		'''Deletes all messages'''
-		if self.user == self.owner: self.sendCmd("clearall")
+		if self.user == self.owner:
+			self.sendCmd("clearall")
 		else: #;D
 			for history in list(self.pArray.values()):
 				self.sendCmd("delmsg", history.pid)
@@ -398,8 +420,10 @@ class ConnectionManager:
 			if hasattr(group, "users"):
 				if user.lower() in group.users:
 					groups.append(group.name)
-		if groups: return groups
-		else: return None
+		if groups:
+			return groups
+		else:
+			return None
 
 	def sendPM(self, user, pm):
 		'''Send's a PM'''
@@ -418,7 +442,8 @@ class ConnectionManager:
 			self.removeGroup(group)
 
 		elif cmd == "ok":
-			if bites[3] != 'M': self.removeGroup(group.name)
+			if bites[3] != 'M':
+				self.removeGroup(group.name)
 			else:
 				group.owner = bites[1]
 				group.time = bites[5]
@@ -498,7 +523,8 @@ class ConnectionManager:
 					self.recvPost(post.user, group, group.getAuth(post.user), post)
 					if post.post[0] == self.prefix:
 						self.recvCommand(post.user, group, group.getAuth(post.user), post, post.post.split()[0][1:].lower(), " ".join(post.post.split()[1:]))
-			except KeyError: pass
+			except KeyError:
+				pass
 
 		elif cmd == "n":
 			group.unum = bites[1]
@@ -521,24 +547,28 @@ class ConnectionManager:
 				if deleted:
 					args = [group, deleted]
 					del group.pArray[deleted.pnum]
-				else: args = [group, None]
+				else:
+					args = [group, None]
 
 		elif cmd == "delete":
 			deleted = group.getLastPost(bites[1], "pid")
 			if deleted:
 				args = [group, deleted]
 				del group.pArray[deleted.pnum]
-			else: args = [group, None]
+			else:
+				args = [group, None]
 
 		elif cmd == "blocked":
-			if bites[3]: args = [group, bites[3], bites[4]]
+			if bites[3]:
+				args = [group, bites[3], bites[4]]
 			else:
 				post = group.getLastPost(bites[1], "unid")
 				if post: args = [group, post.user, bites[4]]
 			group.getBanList()
 
 		elif cmd == "unblocked":
-			if group.name == "pm": group.bl.remove(bites[1])
+			if group.name == self.user:
+				group.bl.remove(bites[1])
 			else:
 				if bites[3]:
 					group.getBanList()
@@ -546,7 +576,7 @@ class ConnectionManager:
 				else: args = [group, "Non-member", bites[4]]
 
 		elif cmd == "logoutok":
-			group.user	= "!anon" + Generate.aid(self, group.nColor, group.uid)
+			group.user = "!anon" + Generate.aid(self, group.nColor, group.uid)
 
 		elif cmd == "clearall":
 			if bites[1] == "ok": group.pArray = {}
@@ -595,5 +625,7 @@ class ConnectionManager:
 
 	def main(self):
 		self.start()
-		if self.pm: self.addGroup(self.user)
-		while self.connected: time.sleep(0.1)
+		if self.pm:
+			self.addGroup(self.user)
+		while self.connected:
+			time.sleep(0.1)
