@@ -620,7 +620,7 @@ class ConnectionManager:
 		buffer = buffer.split(b"\x00")
 		for raw in buffer:
 			if raw:
-				data = raw.decode("latin-1").split(":")
+				data = raw.decode("latin-1").rstrip("\r\n").split(":")
 				self.manage(group, data[0], data)
 
 	def main(self):
