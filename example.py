@@ -13,7 +13,7 @@ class Bot(chlib.ConnectionManager):
 		def recvinited(self, group):
 			print("Connected to "+group.name)
 
-		def recvOK(self, group):
+		def recvOk(self, group):
 			print("Connected to "+group.name)
 
 		def recvRemove(self, group):
