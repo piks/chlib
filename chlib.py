@@ -230,7 +230,7 @@ class Group:
 	def getLastPost(self, match, data = "user"):
 		'''Retreive last post object from user'''
 		try:
-			post = [x for x in list(self.pArray.values()) if getattr(x, data) == match][-1]
+			post = sorted([x for x in list(self.pArray.values()) if getattr(x, data) == match], key=lambda x: x.time, reverse=True)[0]
 		except:
 			post = None
 		return post
