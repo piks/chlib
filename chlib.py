@@ -357,9 +357,11 @@ class Group:
 		if self.user == self.owner:
 			self.sendCmd("clearall")
 		else: #;D
-			for history in list(self.pArray.values()):
-				if hasattr(history, "pid"):
-					self.sendCmd("delmsg", history.pid)
+			pArray = self.pArray.values()
+			for user in list(set([x.user for x in pArray])):
+				post = self.getLastPost(user)
+				if post and hasattr(post, "unid"):
+					self.sendCmd("delallmsg", post.unid, "")
 
 ################################
 #Connections Manager
