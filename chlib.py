@@ -358,7 +358,8 @@ class Group:
 			self.sendCmd("clearall")
 		else: #;D
 			for history in list(self.pArray.values()):
-				self.sendCmd("delmsg", history.pid)
+				if hasattr(history, "pid"):
+					self.sendCmd("delmsg", history.pid)
 
 ################################
 #Connections Manager
