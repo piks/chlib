@@ -314,7 +314,7 @@ class Group:
 		if post:
 			unid = post.unid
 		if unid:
-			self.sendCmd("delallmsg", unid, "")
+			self.sendCmd("delallmsg", unid, post.ip, post.user)
 
 	def ban(self, user):
 		'''Ban a user'''
