@@ -212,7 +212,7 @@ class Group:
 		'''Send a post to the group'''
 		if not html:
 			post = post.replace("<", "&lt;").replace(">", "&gt;")
-		if len(post) < 2700 and self.limited == 0:
+		if len(post) < 650 and self.limited == 0:
 			self.sendCmd("bmsg", "t12r", "<n"+self.nColor+"/><f x"+self.fSize+self.fColor+"=\""+self.fFace+"\">"+post)
 
 	def sendCmd(self, *args, firstcmd = False):
