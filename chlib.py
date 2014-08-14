@@ -361,7 +361,7 @@ class Group:
 			for user in list(set([x.user for x in pArray])):
 				post = self.getLastPost(user)
 				if post and hasattr(post, "unid"):
-					self.sendCmd("delallmsg", post.unid, "")
+					self.dlUser(user)
 
 ################################
 #Connections Manager
