@@ -311,10 +311,10 @@ class Group:
 		'''Delete all of a user's posts'''
 		post = self.getLastPost(user)
 		unid = None
-		if post:
-			unid = post.unid
+		if post:unid = post.unid
 		if unid:
-			self.sendCmd("delallmsg", unid, post.ip, post.user)
+			if post.user[0] in ["!","#"]:self.sendCmd("delallmsg", unid, post.ip, "")
+			else:self.sendCmd("delallmsg", unid, post.ip, post.user)
 
 	def ban(self, user):
 		'''Ban a user'''
