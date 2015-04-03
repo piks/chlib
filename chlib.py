@@ -2,7 +2,8 @@
 #File: chlib.py
 #Made by: cellsheet
 #Description: My take on a flexable chatango library.
-#Contact: n.chatango.com
+#Lib Creator: cellsheet.chatango.com
+#Maintainer: Dan Rel(Piks.chatango.com)
 #Release date: 7/31/2013
 #Version: 1.7
 ################################
@@ -29,22 +30,18 @@ weights = [['5', 75], ['6', 75], ['7', 75], ['8', 75], ['16', 75], ['17', 75], [
 specials = {"de-livechat": 5, "ver-anime": 8, "watch-dragonball": 8, "narutowire": 10, "dbzepisodeorg": 10, "animelinkz": 20, "kiiiikiii": 21, "soccerjumbo": 21, "vipstand": 21, "cricket365live": 21, "pokemonepisodeorg": 22, "watchanimeonn": 22, "leeplarp": 27, "animeultimacom": 34, "rgsmotrisport": 51, "cricvid-hitcric-": 51, "tvtvanimefreak": 54, "stream2watch3": 56, "mitvcanal": 56, "sport24lt": 56, "ttvsports": 56, "eafangames": 56, "myfoxdfw": 67, "peliculas-flv": 69, "narutochatt": 70}
 
 def getServer(group):
-	'''Return server number'''
-	s_num = None
+	"""Return server number"""
 	if group in specials.keys():
-		s_num = specials[group]
-	else:
-		group = group.replace('-', 'q').replace('_', 'q')
-		tmp8 = max(int(group[6:][:3], 36), 1000) if len(group) > 6 else 1000
-		tmp9 = (int(group[:5], 36) % tmp8) / tmp8
-		tmp6 = sum(x[1] for x in weights)
-		tmp4 = 0
-		for i in range(0, len(weights)):
-			tmp4 += weights[i][1] / tmp6
-			if (tmp9 <= tmp4):
-				s_num = weights[i][0]
-				break
-	return s_num
+		return specials[group]
+	group = re.sub("-|_", "q", group)
+	wt, gw = sum([n[1] for n in weights]), 0
+	num1 = 1000 if len(group) < 7 else max(int(group[6:9], 36), 1000)
+	num2 = (int(group[:5],36) % num1) / num1
+	for i, v in weights:
+		gw += v / wt
+		if gw >= num2:
+			return i
+	return None
 
 ################################
 #Generate Auth/Anon ID
@@ -53,17 +50,23 @@ def getServer(group):
 class Generate:
 
 	def aid(self, n, uid):
-		'''Generate Anon ID number'''
+	"""Convert a number plus a user's uid into the user's anon id.
+	The n number is either:
+	-The user's join time (for use in g_participants and participant)
+	-The anon's namecolor (for use in b)
+	"""
+		n, uid = str(n).split(".")[0], str(uid)  # Fault-Tolerance
 		try:
-			if (int(n) == 0) or (len(n) < 4): n = "3452"
-		except ValueError:
+			if int(n) == 0 or len(n) < 4:
+				n = "3452"
+		except:
 			n = "3452"
-		if n != "3452":
-			n = str(int(n))[-4:]
-		v1, v5 = 0, ""
-		for i in range(0, len(n)):
-			v5 += str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))[len(str(int(n[i:][:1])+int(str(uid)[4:][:4][i:][:1]))) - 1:]
-		return v5
+		n = n[-4:]
+		an, u = "", str(uid)[4:][:4]
+		z = list(zip(n, u))
+		for i, v in z:
+			an += str(int(i) + int(v))[-1]
+		return an
 
 	def auth(self):
 		'''Generate auth token'''
