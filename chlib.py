@@ -280,7 +280,10 @@ class Group(object):
 
 	def setFontSize(self, fSize):
 		'''Set's a user's font size'''
-		if int(fSize) < 23:
+		fSize = str(fSize)
+		if 9 <= int(fSize) <= 22:
+			if len(fSize) == 1:
+				fSize = "0"+fSize
 			self.fSize = fSize
 
 	def setFontFace(self, fFace):
